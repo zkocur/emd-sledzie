@@ -43,7 +43,9 @@ knitr::kable(summary(data_clean))
 
 ### Szczegółowa analiza wartości atrybutów
 
-Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych poniej.
+Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
+
+Natęenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. 
 
 ```{r attrAnalysis, echo=FALSE}
 columns <- colnames(data_clean)
@@ -110,6 +112,8 @@ shinyApp(
 train_indices <- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
 test_indices <- -train_indices
 
-fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
-model <- train(length ~ ., data = data_clean[train_indices,], method="ridge", trControl=fitControl, preProcess = c('scale', 'center'))
+train_set <- data.matrix(data_clean[train_indices, -1])
+test_set <- data.matrix(data_clean[test_indices, -1])
+
+model <- train(length ~ ., data = train_set, method="lm", preProcess = c('scale', 'center'))
 ```
