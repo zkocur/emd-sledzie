@@ -13,30 +13,103 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+###  R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
 
 ```{r importLibaries}
 library(knitr)
 library(rmarkdown)
+library(ggplot2)
+library(corrplot)
+library(shiny)
+library(caret)
 set.seed(42)
 
 ```
+### Wczytanie i wyczyszczenie danych
+
+W pliku z danymi, brakujące informacje zastąpiono znakiem '?', który przy wczytaniu zastąpiono symbolem **NA**, który reprezentuje w języku *R* brakujące wartości. Wiersze z brakującymi wartościami usunięto i pozostało około 80% wszystkich obserwacji.
 
 ```{r readData}
 data <- read.csv('sledzie.csv', na.strings = '?')
-knitr::kable(summary(data))
+len_all <- nrow(data)
+data_clean <- na.omit(data)
+len_not_na <- nrow(data_clean)
+print(paste0("Liczba wszystkich obserwacji: ", len_all))
+print(paste0("Liczba obserwacji bez brakujacyhc wartości: ", len_not_na))
+knitr::kable(summary(data_clean))
 ```
 
-## Including Plots
+### Szczegółowa analiza wartości atrybutów
 
-You can also embed plots, for example:
+Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych poniej.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r attrAnalysis, echo=FALSE}
+columns <- colnames(data_clean)
+for (i in 3:length(data_clean)) {
+  p1 <- eval(substitute(
+    ggplot(data=data_clean,aes(x=data_clean[ ,i]))+ 
+      geom_histogram(bins = 30, color="darkblue", fill="lightblue") + 
+      ggtitle(columns[i]) + 
+      theme(plot.title = element_text(hjust = 0.5)) +
+      xlab(colnames(data_clean)[i])
+    ,list(i = i)))
+  print(p1)
+}
 ```
 
+## Korelacje atrybutów
+A tutaj macierz korelacji. Ladna.
+
+```{r correlation, echo=FALSE}
+corrs <- cor(data.matrix(data_clean))
+
+cex.before <- par("cex")
+par(cex = 0.7)
+corrplot(corrs[-1,-1],  method = "color",
+    addCoef.col="black", tl.col="black",
+    order = "hclust", tl.cex = 1/par("cex"),
+    cl.cex = 1/par("cex"))
+par(cex = cex.before)
+```
+
+###  Animowane sledzie!
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r animation, echo=FALSE}
+shinyApp(
+
+  ui = fluidPage(
+    titlePanel("Nancy's Brainstorming"),
+    sidebarLayout(    
+      sidebarPanel(
+        h3(
+          strong("What is this?", style = "font-si24pt")),
+        p("This is a pilot project."),
+        sliderInput("slider", label = "", min = 100, max = 400, value = 250),
+        uiOutput('logo')
+      ),
+      mainPanel(
+        plotOutput("distPlot")
+      ) 
+    )
+  ),
+  server = function(input, output, session) {
+    output$logo <- renderUI({
+      img(src = "https://cdn.pixabay.com/photo/2014/03/12/01/27/animal-pet-285797_1280.png", width = as.integer(input$slider))
+    })
+  },
+  options = list(height = 500)
+)
+```
+
+## Regres osobisty
+
+``` {r regrets}
+train_indices <- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
+test_indices <- -train_indices
+
+fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
+model <- train(length ~ ., data = data_clean[train_indices,], method="ridge", trControl=fitControl, preProcess = c('scale', 'center'))
+```
