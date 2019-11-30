@@ -117,3 +117,8 @@ test_set <- data.matrix(data_clean[test_indices, -1])
 
 model <- train(length ~ ., data = train_set, method="lm", preProcess = c('scale', 'center'))
 ```
+
+```{r model_summary}
+predicted <- predict(model, test_set)
+postResample(predicted, data_clean[test_indices, 2])
+```
