@@ -1,7 +1,7 @@
 ---
 title: "EMD: Projekt z analizy danych"
 author: "Zuzanna Kocur, Tomasz Supłat"
-date: "30 November, 2019"
+date: "01 grudnia, 2019"
 output: 
   html_document: 
     keep_md: yes
@@ -79,7 +79,9 @@ knitr::kable(summary(data_clean))
 
 ### Szczegółowa analiza wartości atrybutów
 
-Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych poniej.
+Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
+
+Natęenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. 
 
 ![](projekt_sledzie_raport_files/figure-html/attrAnalysis-1.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-2.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-3.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-4.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-5.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-6.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-7.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-8.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-9.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-10.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-11.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-12.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-13.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-14.png)<!-- -->
 
@@ -100,6 +102,44 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 train_indices <- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
 test_indices <- -train_indices
 
-fitControl <- trainControl(method = "repeatedcv", number = 10, repeats = 10)
-model <- train(length ~ ., data = data_clean[train_indices,], method="ridge", trControl=fitControl, preProcess = c('scale', 'center'))
+train_set <- data.matrix(data_clean[train_indices, -1])
+test_set <- data.matrix(data_clean[test_indices, -1])
+
+model <- train(length ~ ., data = train_set, method="lm", preProcess = c('scale', 'center'))
+```
+
+
+```r
+predicted <- predict(model, test_set)
+postResample(predicted, data_clean[test_indices, 2])
+```
+
+```
+##      RMSE  Rsquared       MAE 
+## 1.3400963 0.3238662 1.0637601
+```
+
+
+```r
+varImp(model)
+```
+
+```
+## lm variable importance
+## 
+##        Overall
+## fbar   100.000
+## cumf    88.397
+## sst     86.073
+## cfin1   23.750
+## lcop1   18.006
+## recr    17.526
+## totaln  12.065
+## nao      9.060
+## chel1    7.435
+## lcop2    5.315
+## xmonth   5.249
+## cfin2    3.813
+## sal      1.684
+## chel2    0.000
 ```

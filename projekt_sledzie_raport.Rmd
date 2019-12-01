@@ -122,3 +122,7 @@ model <- train(length ~ ., data = train_set, method="lm", preProcess = c('scale'
 predicted <- predict(model, test_set)
 postResample(predicted, data_clean[test_indices, 2])
 ```
+
+```{r var_importance}
+varImp(model)
+```
