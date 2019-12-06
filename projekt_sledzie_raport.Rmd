@@ -96,7 +96,7 @@ Jak widac, niektore parametry sa ze soba silnie skorelowane:
 Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
 
 
-###  Animowane sledzie
+## Animowane sledzie
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
 
 ```{r animation, echo=FALSE}
@@ -120,7 +120,7 @@ shinyApp(
 
 ### Regresja
 
-Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). 
+Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.
 
 ``` {r dane}
 train_indices <- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
@@ -128,12 +128,14 @@ test_indices <- -train_indices
 
 train_set <- data.matrix(data_clean[train_indices, -1])
 test_set <- data.matrix(data_clean[test_indices, -1])
+
+cv <- trainControl(method='cv', number=5)
 ```
 
 Na poczatek sprawdzimy dzialanie najprostszego modelu, regresji liniowej. W celu polepszenia wynikow, dane wejsciowe zostaly przeskalowane oraz wycentrowane.
 
-``` {r model}
-model <- train(length ~ cfin1+cfin2+chel1+chel2+recr+cumf+sst+sal+xmonth+nao, data = train_set, method="lm", preProcess = c('scale', 'center'))
+``` {r model, cache=TRUE}
+model <- train(length ~ cfin1+cfin2+chel1+chel2+recr+cumf+sst+sal+xmonth+nao, data = train_set, method="lm", preProcess = c('scale', 'center'), trControl=cv)
 ```
 
 Nastepnie sprawdzmy jak nasz model radzi sobie na zbiorze testowym:
@@ -141,7 +143,10 @@ Nastepnie sprawdzmy jak nasz model radzi sobie na zbiorze testowym:
 ```{r model_summary}
 predicted <- predict(model, test_set)
 postResample(predicted, data_clean[test_indices, 2])
+summary(model)
 ```
+
+Nie jest to wynik imponujacy, patrzac na R^2 score. Model myli sie srednio o ~1.4 cm w przewidywaniach. Takie wyniki nie sa zaskoczeniem, poniewaz problem jest dosyc zlozony, a regresja liniowa jest dosyc prostym modelem.
 
 Na koniec zobaczmy jakie zmienne sa najwazniejsze dla naszego modelu:
 
@@ -151,4 +156,24 @@ varImp(model)
 
 Jak widzimy, najwazniejsza jest temperatura wody przy powierzchni.
 
+Zobaczmy jak zachowaja sie inne modele. Przetestujemy teraz random forest. Poniewaz trenowanie na pelnym zestawie danych trwa zdecydowanie za dlugo, do trenowania zastosujemy 10% oryginalnego zbioru (wykorzystamy do tego zbior 'test_set'):
 
+``` {r im_very_smol, cache=TRUE}
+model_rf <- train(length ~ ., data = test_set, method="rf", ntree=25, importance= TRUE, trControl=cv)
+```
+
+Zobaczmy teraz jak nasz model radzi sobie ze zbiorem testowym (tutaj pozostale 90% zbioru: 'train_set'):
+
+```{r model_rf}
+predicted <- predict(model_rf, train_set)
+postResample(predicted, data_clean[train_indices, 2])
+```
+Jak widzimy, jest zdecydowanie lepiej od regresji liniowej. R^2 score jest zdecydowanie wiekszy.
+
+Na koniec zobaczmy ktore zmienne maja najwiekszy wplyw na wyniki:
+
+```{r rf_var_importance}
+varImp(model_rf)
+```
+
+Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni. 
