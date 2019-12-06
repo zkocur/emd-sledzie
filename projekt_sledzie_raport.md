@@ -1,7 +1,7 @@
 ---
 title: "EMD: Projekt z analizy danych"
 author: "Zuzanna Kocur, Tomasz Supłat"
-date: "01 grudnia, 2019"
+date: "06 grudnia, 2019"
 output: 
   html_document: 
     keep_md: yes
@@ -11,7 +11,7 @@ output:
 
 
 
-###  R Markdown
+###  Wstępne ustawienia
 
 Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
 
@@ -50,22 +50,13 @@ len_all <- nrow(data)
 data_clean <- na.omit(data)
 len_not_na <- nrow(data_clean)
 print(paste0("Liczba wszystkich obserwacji: ", len_all))
+print(paste0("Liczba obserwacji bez brakujacyhc wartości: ", len_not_na))
+knitr::kable(summary(data_clean))
 ```
 
 ```
 ## [1] "Liczba wszystkich obserwacji: 52582"
-```
-
-```r
-print(paste0("Liczba obserwacji bez brakujacyhc wartości: ", len_not_na))
-```
-
-```
 ## [1] "Liczba obserwacji bez brakujacyhc wartości: 42488"
-```
-
-```r
-knitr::kable(summary(data_clean))
 ```
 
            X             length         cfin1             cfin2             chel1            chel2            lcop1              lcop2             fbar             recr              cumf             totaln             sst             sal            xmonth            nao         
@@ -81,21 +72,34 @@ knitr::kable(summary(data_clean))
 
 Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
 
-Natęenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. 
+Natężenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. Łączne roczne natężenie połowów w regionie (**cumf**) i łączna liczba ryb złowionych w ramach połowu (**totaln**) mają losowe rozkłady, a temperatura przy powierzchni wody (**sst**) oraz poziom zasolenia wody (**sal**) przypominają rozkłady normalne. Rozkład normalny przyjął także atrybut **xmonth**, oznaczający miesiąc połowu, z którego można odczytać że najwięcej obserwacji w zbiorze to obserwacje z cieplejszych miesięcy (lipiec, sierpień, październik). Ostatni atrybut, oscylacja północnoatlantycka (**nao**) przypomina rozkład dwumodalny.
 
 ![](projekt_sledzie_raport_files/figure-html/attrAnalysis-1.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-2.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-3.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-4.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-5.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-6.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-7.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-8.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-9.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-10.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-11.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-12.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-13.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-14.png)<!-- -->
 
 ## Korelacje atrybutów
-A tutaj macierz korelacji. Ladna.
+Przeanalizujmy teraz czy parametry wejsciowe sa ze soba skorelowane.
 
 ![](projekt_sledzie_raport_files/figure-html/correlation-1.png)<!-- -->
 
-###  Animowane sledzie!
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Jak widac, niektore parametry sa ze soba silnie skorelowane:
 
-<!--html_preserve--><div style="width: 100% ; height: 500px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div><!--/html_preserve-->
+* 'lcop1' oraz 'chel1'
+* 'lcop2' oraz 'chel2'
+* 'lcop2' oraz 'cfin2'
+* 'fbar' oraz 'cumf'
+* 'totaln' oraz 'cumf'
 
-## Regres osobisty
+Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
+
+
+## Animowane sledzie
+Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
+
+<!--html_preserve--><div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div><!--/html_preserve-->
+
+## Regresja
+
+Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.
 
 
 ```r
@@ -105,8 +109,17 @@ test_indices <- -train_indices
 train_set <- data.matrix(data_clean[train_indices, -1])
 test_set <- data.matrix(data_clean[test_indices, -1])
 
-model <- train(length ~ ., data = train_set, method="lm", preProcess = c('scale', 'center'))
+cv <- trainControl(method='cv', number=5)
 ```
+
+Na poczatek sprawdzimy dzialanie najprostszego modelu, regresji liniowej. W celu polepszenia wynikow, dane wejsciowe zostaly przeskalowane oraz wycentrowane.
+
+
+```r
+model <- train(length ~ cfin1+cfin2+chel1+chel2+recr+cumf+sst+sal+xmonth+nao, data = train_set, method="lm", preProcess = c('scale', 'center'), trControl=cv)
+```
+
+Nastepnie sprawdzmy jak nasz model radzi sobie na zbiorze testowym:
 
 
 ```r
@@ -116,8 +129,10 @@ postResample(predicted, data_clean[test_indices, 2])
 
 ```
 ##      RMSE  Rsquared       MAE 
-## 1.3400963 0.3238662 1.0637601
+## 1.4150780 0.2460649 1.1383371
 ```
+
+Na koniec zobaczmy jakie zmienne sa najwazniejsze dla naszego modelu:
 
 
 ```r
@@ -128,18 +143,65 @@ varImp(model)
 ## lm variable importance
 ## 
 ##        Overall
-## fbar   100.000
-## cumf    88.397
-## sst     86.073
-## cfin1   23.750
-## lcop1   18.006
-## recr    17.526
-## totaln  12.065
-## nao      9.060
-## chel1    7.435
-## lcop2    5.315
-## xmonth   5.249
-## cfin2    3.813
-## sal      1.684
-## chel2    0.000
+## sst    100.000
+## chel1   33.213
+## recr    30.034
+## cfin1   20.692
+## sal     14.543
+## nao     12.547
+## chel2    8.744
+## cfin2    3.157
+## xmonth   1.307
+## cumf     0.000
 ```
+
+Jak widzimy, najwazniejsza jest temperatura wody przy powierzchni.
+
+Zobaczmy jak zachowaja sie inne modele. Przetestujemy teraz random forest. Poniewaz trenowanie na pelnym zestawie danych trwa zdecydowanie za dlugo, do trenowania zastosujemy 10% oryginalnego zbioru (wykorzystamy do tego zbior 'test_set'):
+
+
+```r
+model_rf <- train(length ~ ., data = test_set, method="rf", ntree=25, importance= TRUE, trControl=cv)
+```
+
+Zobaczmy teraz jak nasz model radzi sobie ze zbiorem testowym (tutaj pozostale 90% zbioru: 'train_set'):
+
+
+```r
+predicted <- predict(model_rf, train_set)
+postResample(predicted, data_clean[train_indices, 2])
+```
+
+```
+##      RMSE  Rsquared       MAE 
+## 1.1774627 0.4923352 0.9283122
+```
+
+Na koniec zobaczmy ktore zmienne maja najwiekszy wplyw na wyniki:
+
+
+```r
+varImp(model_rf)
+```
+
+```
+## rf variable importance
+## 
+##        Overall
+## xmonth 100.000
+## sst     63.187
+## lcop1   34.999
+## totaln  29.002
+## lcop2   28.278
+## recr    27.505
+## fbar    19.506
+## cfin2   16.615
+## chel2   16.533
+## chel1   14.716
+## cumf    11.425
+## cfin1    4.112
+## sal      3.936
+## nao      0.000
+```
+
+Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nastepne sa parametry 'recr' oraz 'sst'. Poprzedni model rowniez uwglednial te zmienne. Mozemy 
