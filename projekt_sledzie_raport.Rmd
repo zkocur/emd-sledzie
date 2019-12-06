@@ -7,13 +7,14 @@ output:
     keep_md: yes
     toc: yes
     toc_float: yes
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-###  R Markdown
+###  Wstępne ustawienia
 
 Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
 
@@ -31,7 +32,7 @@ set.seed(42)
 
 W pliku z danymi, brakujące informacje zastąpiono znakiem '?', który przy wczytaniu zastąpiono symbolem **NA**, który reprezentuje w języku *R* brakujące wartości. Wiersze z brakującymi wartościami usunięto i pozostało około 80% wszystkich obserwacji.
 
-```{r readData}
+```{r readData, results='hold'}
 data <- read.csv('sledzie.csv', na.strings = '?')
 len_all <- nrow(data)
 data_clean <- na.omit(data)
@@ -45,7 +46,7 @@ knitr::kable(summary(data_clean))
 
 Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
 
-Natęenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. 
+Natężenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. Łączne roczne natężenie połowów w regionie (**cumf**) i łączna liczba ryb złowionych w ramach połowu (**totaln**) mają losowe rozkłady, a temperatura przy powierzchni wody (**sst**) oraz poziom zasolenia wody (**sal**) przypominają rozkłady normalne. Rozkład normalny przyjął także atrybut **xmonth**, oznaczający miesiąc połowu, z którego można odczytać że najwięcej obserwacji w zbiorze to obserwacje z cieplejszych miesięcy (lipiec, sierpień, październik). Ostatni atrybut, oscylacja północnoatlantycka (**nao**) przypomina rozkład dwumodalny.
 
 ```{r attrAnalysis, echo=FALSE}
 columns <- colnames(data_clean)
@@ -61,7 +62,7 @@ for (i in 3:length(data_clean)) {
 }
 ```
 
-## Korelacje atrybutów
+### Korelacje atrybutów
 A tutaj macierz korelacji. Ladna.
 
 ```{r correlation, echo=FALSE}
@@ -76,37 +77,29 @@ corrplot(corrs[-1,-1],  method = "color",
 par(cex = cex.before)
 ```
 
-###  Animowane sledzie!
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+###  Animowane sledzie
+Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
 
 ```{r animation, echo=FALSE}
 shinyApp(
 
   ui = fluidPage(
-    titlePanel("Nancy's Brainstorming"),
-    sidebarLayout(    
-      sidebarPanel(
         h3(
-          strong("What is this?", style = "font-si24pt")),
-        p("This is a pilot project."),
-        sliderInput("slider", label = "", min = 100, max = 400, value = 250),
+          strong("Interaktywny wykres.", style = "font-si24pt")),
+        p("Liczba na suwaku oznacza numer obserwacji w zbiorze danych. Rysunek przyjmuje szerokość odpowiadającą danej obserwacji."),
+        sliderInput("slider", label = "", min = 1, max = nrow(data_clean), value = 1, width = "100%"),
         uiOutput('logo')
       ),
-      mainPanel(
-        plotOutput("distPlot")
-      ) 
-    )
-  ),
+     
   server = function(input, output, session) {
     output$logo <- renderUI({
-      img(src = "https://cdn.pixabay.com/photo/2014/03/12/01/27/animal-pet-285797_1280.png", width = as.integer(input$slider))
+      img(src = "https://cdn.pixabay.com/photo/2014/03/12/01/27/animal-pet-285797_1280.png", width = 20*as.integer(data_clean$length[input$slider]))
     })
   },
-  options = list(height = 500)
 )
 ```
 
-## Regres osobisty
+### Regres osobisty
 
 ``` {r regrets}
 train_indices <- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
