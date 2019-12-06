@@ -19,11 +19,11 @@ Zaczęto od wczytania i wyczyszczenia danych, a następnie przeanalizowano poszc
 
 Na koniec stworzono model regresji liniowej w celu ustalenia, które atrybuty mają największy wpływ na długość ryby.
 
-Nastepnie poprawiono wyniki regresji za pomoca innego modelu: random forest.
+Następnie poprawiono wyniki za pomocą innego modelu: random forest.
 
 ##  Wstępne ustawienia
 
-Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
+Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki:
 
 
 ```r
@@ -80,18 +80,18 @@ knitr::kable(summary(data_clean))
 
 ## Szczegółowa analiza wartości atrybutów
 
-Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
+Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych poniżej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkładu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, że w ogóle nie widać odpowiadających im słupków.
 
-Natężenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zblione rozkłady. Łączne roczne natężenie połowów w regionie (**cumf**) i łączna liczba ryb złowionych w ramach połowu (**totaln**) mają losowe rozkłady, a temperatura przy powierzchni wody (**sst**) oraz poziom zasolenia wody (**sal**) przypominają rozkłady normalne. Rozkład normalny przyjął także atrybut **xmonth**, oznaczający miesiąc połowu, z którego można odczytać że najwięcej obserwacji w zbiorze to obserwacje z cieplejszych miesięcy (lipiec, sierpień, październik). Ostatni atrybut, oscylacja północnoatlantycka (**nao**) przypomina rozkład dwumodalny.
+Natężenie połowów w regionie (**fbar**) i roczny narybek (**recr**) mają zbliżone rozkłady. Łączne roczne natężenie połowów w regionie (**cumf**) i łączna liczba ryb złowionych w ramach połowu (**totaln**) mają losowe rozkłady, a temperatura przy powierzchni wody (**sst**) oraz poziom zasolenia wody (**sal**) przypominają rozkłady normalne. Rozkład normalny przyjął także atrybut **xmonth**, oznaczający miesiąc połowu, z którego można odczytać że najwięcej obserwacji w zbiorze to obserwacje z cieplejszych miesięcy (lipiec, sierpień, październik). Ostatni atrybut, oscylacja północnoatlantycka (**nao**) przypomina rozkład dwumodalny.
 
 ![](projekt_sledzie_raport_files/figure-html/attrAnalysis-1.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-2.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-3.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-4.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-5.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-6.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-7.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-8.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-9.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-10.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-11.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-12.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-13.png)<!-- -->![](projekt_sledzie_raport_files/figure-html/attrAnalysis-14.png)<!-- -->
 
 ## Korelacje atrybutów
-Przeanalizujmy teraz czy parametry wejsciowe sa ze soba skorelowane.
+Przeanalizujmy teraz czy parametry wejściowe są ze sobą skorelowane.
 
 ![](projekt_sledzie_raport_files/figure-html/correlation-1.png)<!-- -->
 
-Jak widac, niektore parametry sa ze soba silnie skorelowane:
+Jak widac, niektóre parametry są ze sobą silnie skorelowane:
 
 * 'lcop1' oraz 'chel1'
 * 'lcop2' oraz 'chel2'
@@ -99,18 +99,18 @@ Jak widac, niektore parametry sa ze soba silnie skorelowane:
 * 'fbar' oraz 'cumf'
 * 'totaln' oraz 'cumf'
 
-Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
+Parametry 'lcop', 'chel' oraz 'cfin' odpowiadają poszczególnym gatunkom planktonu. Prawdopodobnie mają one podobne wymagania co do temperatury i innych czynników środowiskowych, przez co rozwijają się podobnie. Nie dziwi również silna korelacja pomiędzy parametrami 'fbar', 'cumf' - oba opisują natężenie połowów w regionie. Tak samo mozna wytlumaczyc silna korelację pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry mogą zaburzać analize danych, usuniemy część z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
 
-Przypatrzmy sie teraz parametrom ktore najbardziej wplywaja (sa najbardziej skorelowane) na parametr 'lenght'. Dosyc wysoka korelacje ujemna ma zmienna 'sst' oraz zmienna 'nao'. Natomiast dodanio skorelowane sa zmienne 'fbar', 'chel1' i 'fcop1'.
+Przypatrzmy się teraz parametrom które najbardziej wpływają (sa najbardziej skorelowane) na parametr 'lenght'. Dosyć wysoka korelację ujemna ma zmienna 'sst' oraz zmienna 'nao'. Natomiast dodatnio skorelowane są zmienne 'fbar', 'chel1' i 'fcop1'.
 
-## Interaktywny wykres sledzia
+## Interaktywny wykres śledzia
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
 
 <!--html_preserve--><div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div><!--/html_preserve-->
 
 ## Regresja
 
-Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.
+Spróbujmy teraz odpowiedzieć na pytanie co jest przyczyna zmian długości śledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejściowe zostały podzielone na zbiór treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidację.
 
 
 ```r
@@ -123,14 +123,14 @@ test_set <- data.matrix(data_clean[test_indices, -1])
 cv <- trainControl(method='cv', number=5)
 ```
 
-Na poczatek sprawdzimy dzialanie najprostszego modelu, regresji liniowej. W celu polepszenia wynikow, dane wejsciowe zostaly przeskalowane oraz wycentrowane.
+Na początek sprawdzimy działanie najprostszego modelu, regresji liniowej. W celu polepszenia wyników, dane wejściowe zostały przeskalowane oraz wycentrowane.
 
 
 ```r
 model <- train(length ~ cfin1+cfin2+chel1+chel2+recr+cumf+sst+sal+xmonth+nao, data = train_set, method="lm", preProcess = c('scale', 'center'), trControl=cv)
 ```
 
-Nastepnie sprawdzmy jak nasz model radzi sobie na zbiorze testowym:
+Następnie sprawdźmy jak nasz model radzi sobie na zbiorze testowym:
 
 
 ```r
@@ -177,9 +177,9 @@ summary(model)
 ## F-statistic:  1251 on 10 and 38231 DF,  p-value: < 2.2e-16
 ```
 
-Nie jest to wynik imponujacy, patrzac na R^2 score. Model myli sie srednio o ~1.4 cm w przewidywaniach. Takie wyniki nie sa zaskoczeniem, poniewaz problem jest dosyc zlozony, a regresja liniowa jest dosyc prostym modelem.
+Nie jest to wynik imponujący, patrząc na R^2 score. Model myli się średnio o ~1.4 cm w przewidywaniach. Takie wyniki nie sa zaskoczeniem, poniewaz problem jest zlozony, a regresja liniowa jest dość prostym modelem.
 
-Na koniec zobaczmy jakie zmienne sa najwazniejsze dla naszego modelu:
+Na koniec zobaczmy jakie zmienne są najważniejsze dla naszego modelu:
 
 
 ```r
@@ -202,16 +202,16 @@ varImp(model)
 ## cumf     0.000
 ```
 
-Jak widzimy, najwazniejsza jest temperatura wody przy powierzchni.
+Jak widzimy, najważniejsza jest temperatura wody przy powierzchni.
 
-Zobaczmy jak zachowaja sie inne modele. Przetestujemy teraz random forest. Poniewaz trenowanie na pelnym zestawie danych trwa zdecydowanie za dlugo, do trenowania zastosujemy 10% oryginalnego zbioru (wykorzystamy do tego zbior 'test_set'):
+Zobaczmy jak zachowają się inne modele. Przetestujemy teraz random forest. Poniewaz trenowanie na pełnym zestawie danych trwa zdecydowanie za długo, do trenowania zastosujemy 10% oryginalnego zbioru (wykorzystamy do tego zbiór 'test_set'):
 
 
 ```r
 model_rf <- train(length ~ ., data = test_set, method="rf", ntree=100, importance= TRUE, trControl=cv)
 ```
 
-Zobaczmy teraz jak nasz model radzi sobie ze zbiorem testowym (tutaj pozostale 90% zbioru: 'train_set'):
+Zobaczmy teraz jak nasz model radzi sobie ze zbiorem testowym (tutaj pozostałe 90% zbioru: 'train_set'):
 
 
 ```r
@@ -225,7 +225,7 @@ postResample(predicted, data_clean[train_indices, 2])
 ```
 Jak widzimy, jest zdecydowanie lepiej od regresji liniowej. R^2 score jest zdecydowanie wiekszy.
 
-Na koniec zobaczmy ktore zmienne maja najwiekszy wplyw na wyniki:
+Na koniec zobaczmy które zmienne mają największy wpływ na wyniki:
 
 
 ```r
@@ -252,7 +252,7 @@ varImp(model_rf)
 ## nao      0.000
 ```
 
-Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni.
+Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w żaden sposób skorelowana z długością śledzia. Następny jest parametr 'sst', czyli temperatura wody przy powierzchni.
 
 ## Wyniki
-Z wykonanej analizy mozemy wysunac nastepujacy wniosek: najprawdopodobniej temperatura wody przy powierzchni (parametr 'sst') jest glownym czynnikiem decydujacym o dugosci sledzia. Jest ona dosyc silnie skorelowana ujemnie z dlugoscia, co sugeruje ze im wieksza temperatura, tym sledzie sa krotsze.
+Z wykonanej analizy możemy wysunąć następujący wniosek: najprawdopodobniej temperatura wody przy powierzchni (parametr 'sst') jest głównym czynnikiem decydującym o długości śledzia. Jest ona dość silnie skorelowana ujemnie z długością, co sugeruje że im większa temperatura, tym śledzie są krótsze.

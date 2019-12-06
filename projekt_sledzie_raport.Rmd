@@ -95,9 +95,9 @@ Jak widac, niektóre parametry są ze sobą silnie skorelowane:
 * 'fbar' oraz 'cumf'
 * 'totaln' oraz 'cumf'
 
-Parametry 'lcop', 'chel' oraz 'cfin' odpowiadają poszczególnym gatunkom planktonu. Prawdopodobnie mają one podobne wymagania co do temperatury i innych czynników środowiskowych, przez co rozwijają się podobnie. Nie dziwi również silna korelacja pomiędzy parametrami 'fbar', 'cumf' - oba opisują natężenie połowów w regionie. Tak samo mozna wytlumaczyc silna korelację pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry mogą zaburzać analize danych, usuniemy część z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
+Parametry 'lcop', 'chel' oraz 'cfin' odpowiadają poszczególnym gatunkom planktonu. Prawdopodobnie mają one podobne wymagania co do temperatury i innych czynników środowiskowych, przez co rozwijają się podobnie. Nie dziwi również silna korelacja pomiędzy parametrami 'fbar', 'cumf' - oba opisują natężenie połowów w regionie. Tak samo mozna wytlumaczyc silna korelację pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Ponieważ takie parametry mogą zaburzać analize danych, usuniemy część z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
 
-Przypatrzmy się teraz parametrom które najbardziej wpływają (sa najbardziej skorelowane) na parametr 'lenght'. Dosyć wysoka korelację ujemna ma zmienna 'sst' oraz zmienna 'nao'. Natomiast dodatnio skorelowane są zmienne 'fbar', 'chel1' i 'fcop1'.
+Przypatrzmy się teraz parametrom które najbardziej wpływają (sa najbardziej skorelowane) na parametr 'lenght'. Dosyć wysoką korelację ujemna ma zmienna 'sst' oraz zmienna 'nao'. Natomiast dodatnio skorelowane są zmienne 'fbar', 'chel1' i 'fcop1'. Może to sugerować związek pomiędzy zmiennymi.
 
 ## Interaktywny wykres śledzia
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
