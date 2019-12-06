@@ -11,7 +11,15 @@ output:
 
 
 
-###  Wstępne ustawienia
+
+## Opis projektu
+Celem projektu była analiza zbioru danych *sledzie.csv* i próba ustalenia wpływu poszczególnych atrybutów na długość śledzi oceanicznych wyławianych w Europie.
+
+Zaczęto od wczytania i wyczyszczenia danych, a następnie przeanalizowano poszczególne atrybuty i ich rozkłady oraz korelacje występujące między nimi. Przygotowano także interaktywny wykres, który przedstawia jak zmieniała się długość badanej ryby w czasie.
+
+Na koniec stworzono model regresji liniowej w celu ustalenia, które atrybuty mają największy wpływ na długość ryby.
+
+##  Wstępne ustawienia
 
 Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
 
@@ -39,7 +47,7 @@ library(caret)
 ```r
 set.seed(42)
 ```
-### Wczytanie i wyczyszczenie danych
+## Wczytanie i wyczyszczenie danych
 
 W pliku z danymi, brakujące informacje zastąpiono znakiem '?', który przy wczytaniu zastąpiono symbolem **NA**, który reprezentuje w języku *R* brakujące wartości. Wiersze z brakującymi wartościami usunięto i pozostało około 80% wszystkich obserwacji.
 
@@ -68,7 +76,7 @@ knitr::kable(summary(data_clean))
      3rd Qu.:39447   3rd Qu.:26.5   3rd Qu.: 0.3333   3rd Qu.: 1.7936   3rd Qu.:11.500   3rd Qu.:27.193   3rd Qu.: 21.2315   3rd Qu.:37.232   3rd Qu.:0.4650   3rd Qu.: 724151   3rd Qu.:0.29803   3rd Qu.: 730351   3rd Qu.:14.16   3rd Qu.:35.52   3rd Qu.: 9.000   3rd Qu.: 1.63000 
      Max.   :52580   Max.   :32.5   Max.   :37.6667   Max.   :19.3958   Max.   :75.000   Max.   :57.706   Max.   :115.5833   Max.   :68.736   Max.   :0.8490   Max.   :1565890   Max.   :0.39801   Max.   :1015595   Max.   :14.73   Max.   :35.61   Max.   :12.000   Max.   : 5.08000 
 
-### Szczegółowa analiza wartości atrybutów
+## Szczegółowa analiza wartości atrybutów
 
 Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
 
@@ -92,12 +100,12 @@ Jak widac, niektore parametry sa ze soba silnie skorelowane:
 Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
 
 
-## Animowane sledzie
+## Interaktywny wykres sledzia
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
 
 <!--html_preserve--><div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div><!--/html_preserve-->
 
-## Regresja
+### Regresja
 
 Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.
 
@@ -132,6 +140,42 @@ postResample(predicted, data_clean[test_indices, 2])
 ## 1.4150780 0.2460649 1.1383371
 ```
 
+```r
+summary(model)
+```
+
+```
+## 
+## Call:
+## lm(formula = .outcome ~ ., data = dat)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -6.6875 -0.9394  0.0390  0.9919  6.7518 
+## 
+## Coefficients:
+##              Estimate Std. Error  t value Pr(>|t|)    
+## (Intercept) 25.305086   0.007333 3450.967  < 2e-16 ***
+## cfin1        0.145344   0.007781   18.679  < 2e-16 ***
+## cfin2       -0.036819   0.008667   -4.248 2.16e-05 ***
+## chel1        0.266213   0.009185   28.983  < 2e-16 ***
+## chel2       -0.076916   0.008695   -8.846  < 2e-16 ***
+## recr        -0.227796   0.008639  -26.367  < 2e-16 ***
+## cumf        -0.014657   0.008881   -1.650  0.09888 .  
+## sst         -0.810988   0.009661  -83.945  < 2e-16 ***
+## sal          0.108994   0.008004   13.618  < 2e-16 ***
+## xmonth       0.020065   0.007361    2.726  0.00642 ** 
+## nao          0.129471   0.010811   11.976  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.434 on 38231 degrees of freedom
+## Multiple R-squared:  0.2466,	Adjusted R-squared:  0.2464 
+## F-statistic:  1251 on 10 and 38231 DF,  p-value: < 2.2e-16
+```
+
+Nie jest to wynik imponujacy, patrzac na R^2 score. Model myli sie srednio o ~1.4 cm w przewidywaniach. Takie wyniki nie sa zaskoczeniem, poniewaz problem jest dosyc zlozony, a regresja liniowa jest dosyc prostym modelem.
+
 Na koniec zobaczmy jakie zmienne sa najwazniejsze dla naszego modelu:
 
 
@@ -161,7 +205,7 @@ Zobaczmy jak zachowaja sie inne modele. Przetestujemy teraz random forest. Ponie
 
 
 ```r
-model_rf <- train(length ~ ., data = test_set, method="rf", ntree=25, importance= TRUE, trControl=cv)
+model_rf <- train(length ~ ., data = test_set, method="rf", ntree=100, importance= TRUE, trControl=cv)
 ```
 
 Zobaczmy teraz jak nasz model radzi sobie ze zbiorem testowym (tutaj pozostale 90% zbioru: 'train_set'):
@@ -174,8 +218,9 @@ postResample(predicted, data_clean[train_indices, 2])
 
 ```
 ##      RMSE  Rsquared       MAE 
-## 1.1774627 0.4923352 0.9283122
+## 1.1750401 0.4944215 0.9260874
 ```
+Jak widzimy, jest zdecydowanie lepiej od regresji liniowej. R^2 score jest zdecydowanie wiekszy.
 
 Na koniec zobaczmy ktore zmienne maja najwiekszy wplyw na wyniki:
 
@@ -189,19 +234,19 @@ varImp(model_rf)
 ## 
 ##        Overall
 ## xmonth 100.000
-## sst     63.187
-## lcop1   34.999
-## totaln  29.002
-## lcop2   28.278
-## recr    27.505
-## fbar    19.506
-## cfin2   16.615
-## chel2   16.533
-## chel1   14.716
-## cumf    11.425
-## cfin1    4.112
-## sal      3.936
+## sst     66.785
+## lcop1   28.479
+## recr    22.027
+## totaln  21.573
+## cfin2   20.923
+## chel1   19.596
+## lcop2   14.722
+## chel2   12.555
+## fbar    12.115
+## cumf     4.415
+## sal      2.462
+## cfin1    2.234
 ## nao      0.000
 ```
 
-Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nastepne sa parametry 'recr' oraz 'sst'. Poprzedni model rowniez uwglednial te zmienne. Mozemy 
+Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni. 

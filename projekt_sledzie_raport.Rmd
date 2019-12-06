@@ -15,14 +15,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-### Opis projektu
+## Opis projektu
 Celem projektu była analiza zbioru danych *sledzie.csv* i próba ustalenia wpływu poszczególnych atrybutów na długość śledzi oceanicznych wyławianych w Europie.
 
 Zaczęto od wczytania i wyczyszczenia danych, a następnie przeanalizowano poszczególne atrybuty i ich rozkłady oraz korelacje występujące między nimi. Przygotowano także interaktywny wykres, który przedstawia jak zmieniała się długość badanej ryby w czasie.
 
 Na koniec stworzono model regresji liniowej w celu ustalenia, które atrybuty mają największy wpływ na długość ryby.
 
-###  Wstępne ustawienia
+##  Wstępne ustawienia
 
 Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
 
@@ -36,7 +36,7 @@ library(caret)
 set.seed(42)
 
 ```
-### Wczytanie i wyczyszczenie danych
+## Wczytanie i wyczyszczenie danych
 
 W pliku z danymi, brakujące informacje zastąpiono znakiem '?', który przy wczytaniu zastąpiono symbolem **NA**, który reprezentuje w języku *R* brakujące wartości. Wiersze z brakującymi wartościami usunięto i pozostało około 80% wszystkich obserwacji.
 
@@ -50,7 +50,7 @@ print(paste0("Liczba obserwacji bez brakujacyhc wartości: ", len_not_na))
 knitr::kable(summary(data_clean))
 ```
 
-### Szczegółowa analiza wartości atrybutów
+## Szczegółowa analiza wartości atrybutów
 
 Dla katego atrybutu dokonano analizy na podstawie histogramów przedstawionych ponizej. Dostępność planktonu *Calanus helgolandicus gat. 2* oraz *widłonogów gat. 2* nie przypomina konkretnego rozkladu. Wykresy dla pozostałych planktonów mają wysokie słupki w okolicach zera i długi ogon. Dla niektórych z nich, obserwacji odległych od zera było tak niewiele, ze w ogóle nie widać odpowiadających im słupków.
 
@@ -70,7 +70,7 @@ for (i in 3:length(data_clean)) {
 }
 ```
 
-### Korelacje atrybutów
+## Korelacje atrybutów
 Przeanalizujmy teraz czy parametry wejsciowe sa ze soba skorelowane.
 
 ```{r correlation, echo=FALSE}
@@ -96,7 +96,7 @@ Jak widac, niektore parametry sa ze soba silnie skorelowane:
 Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
 
 
-## Animowane sledzie
+## Interaktywny wykres sledzia
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
 
 ```{r animation, echo=FALSE}
@@ -118,7 +118,7 @@ shinyApp(
 )
 ```
 
-### Regresja
+## Regresja
 
 Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.
 
@@ -159,7 +159,7 @@ Jak widzimy, najwazniejsza jest temperatura wody przy powierzchni.
 Zobaczmy jak zachowaja sie inne modele. Przetestujemy teraz random forest. Poniewaz trenowanie na pelnym zestawie danych trwa zdecydowanie za dlugo, do trenowania zastosujemy 10% oryginalnego zbioru (wykorzystamy do tego zbior 'test_set'):
 
 ``` {r im_very_smol, cache=TRUE}
-model_rf <- train(length ~ ., data = test_set, method="rf", ntree=25, importance= TRUE, trControl=cv)
+model_rf <- train(length ~ ., data = test_set, method="rf", ntree=100, importance= TRUE, trControl=cv)
 ```
 
 Zobaczmy teraz jak nasz model radzi sobie ze zbiorem testowym (tutaj pozostale 90% zbioru: 'train_set'):
@@ -176,4 +176,6 @@ Na koniec zobaczmy ktore zmienne maja najwiekszy wplyw na wyniki:
 varImp(model_rf)
 ```
 
-Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni. 
+Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni.
+
+## Wyniki
