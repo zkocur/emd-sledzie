@@ -1521,6 +1521,7 @@ div.tocify {
 <p>Celem projektu była analiza zbioru danych <em>sledzie.csv</em> i próba ustalenia wpływu poszczególnych atrybutów na długość śledzi oceanicznych wyławianych w Europie.</p>
 <p>Zaczęto od wczytania i wyczyszczenia danych, a następnie przeanalizowano poszczególne atrybuty i ich rozkłady oraz korelacje występujące między nimi. Przygotowano także interaktywny wykres, który przedstawia jak zmieniała się długość badanej ryby w czasie.</p>
 <p>Na koniec stworzono model regresji liniowej w celu ustalenia, które atrybuty mają największy wpływ na długość ryby.</p>
+<p>Nastepnie poprawiono wyniki regresji za pomoca innego modelu: random forest.</p>
 </div>
 <div id="wstępne-ustawienia" class="section level2">
 <h2>Wstępne ustawienia</h2>
@@ -1706,13 +1707,15 @@ knitr::kable(summary(data_clean))</code></pre>
 <li>‘totaln’ oraz ‘cumf’</li>
 </ul>
 <p>Parametry ‘lcop’, ‘chel’ oraz ‘cfin’ odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami ‘fbar’, ‘cumf’ - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy ‘totaln’ i ‘cumf’ - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: ‘lcop1’, ‘lcop2’, ‘fbar’, ‘totaln’.</p>
+<p>Przypatrzmy sie teraz parametrom ktore najbardziej wplywaja (sa najbardziej skorelowane) na parametr ‘lenght’. Dosyc wysoka korelacje ujemna ma zmienna ‘sst’ oraz zmienna ‘nao’. Natomiast dodanio skorelowane sa zmienne ‘fbar’, ‘chel1’ i ‘fcop1’.</p>
 </div>
 <div id="interaktywny-wykres-sledzia" class="section level2">
 <h2>Interaktywny wykres sledzia</h2>
 <p>Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.</p>
 <div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
-<div id="regresja" class="section level3">
-<h3>Regresja</h3>
+</div>
+<div id="regresja" class="section level2">
+<h2>Regresja</h2>
 <p>Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny. Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.</p>
 <pre class="r"><code>train_indices &lt;- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
 test_indices &lt;- -train_indices
@@ -1802,6 +1805,9 @@ postResample(predicted, data_clean[train_indices, 2])</code></pre>
 ## nao      0.000</code></pre>
 <p>Co zaskakujace, model uznal zmienna ‘xmonth’ za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr ‘sst’, czyli temperatura wody przy powierzchni.</p>
 </div>
+<div id="wyniki" class="section level2">
+<h2>Wyniki</h2>
+<p>Z wykonanej analizy mozemy wysunac nastepujacy wniosek: najprawdopodobniej temperatura wody przy powierzchni (parametr ‘sst’) jest glownym czynnikiem decydujacym o dugosci sledzia. Jest ona dosyc silnie skorelowana ujemnie z dlugoscia, co sugeruje ze im wieksza temperatura, tym sledzie sa krotsze.</p>
 </div>
 
 

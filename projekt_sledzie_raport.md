@@ -19,6 +19,8 @@ Zaczęto od wczytania i wyczyszczenia danych, a następnie przeanalizowano poszc
 
 Na koniec stworzono model regresji liniowej w celu ustalenia, które atrybuty mają największy wpływ na długość ryby.
 
+Nastepnie poprawiono wyniki regresji za pomoca innego modelu: random forest.
+
 ##  Wstępne ustawienia
 
 Zapewniono powtarzalność wyników oraz zaimportowano niezbędne biblioteki.
@@ -99,13 +101,14 @@ Jak widac, niektore parametry sa ze soba silnie skorelowane:
 
 Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
 
+Przypatrzmy sie teraz parametrom ktore najbardziej wplywaja (sa najbardziej skorelowane) na parametr 'lenght'. Dosyc wysoka korelacje ujemna ma zmienna 'sst' oraz zmienna 'nao'. Natomiast dodanio skorelowane sa zmienne 'fbar', 'chel1' i 'fcop1'.
 
 ## Interaktywny wykres sledzia
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
 
 <!--html_preserve--><div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div><!--/html_preserve-->
 
-### Regresja
+## Regresja
 
 Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). Dodatkowo do trenowania zastosujemy 5-krotna walidacje.
 
@@ -249,4 +252,7 @@ varImp(model_rf)
 ## nao      0.000
 ```
 
-Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni. 
+Co zaskakujace, model uznal zmienna 'xmonth' za najbardziej znaczaca przy przewidywaniu dlugosci sledzia. Nie jest ona praktycznie w zaden sposob skorelowana z dlugoscia sledzia. Nastepny jest parametr 'sst', czyli temperatura wody przy powierzchni.
+
+## Wyniki
+Z wykonanej analizy mozemy wysunac nastepujacy wniosek: najprawdopodobniej temperatura wody przy powierzchni (parametr 'sst') jest glownym czynnikiem decydujacym o dugosci sledzia. Jest ona dosyc silnie skorelowana ujemnie z dlugoscia, co sugeruje ze im wieksza temperatura, tym sledzie sa krotsze.
