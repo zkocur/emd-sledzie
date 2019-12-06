@@ -62,8 +62,8 @@ for (i in 3:length(data_clean)) {
 }
 ```
 
-### Korelacje atrybutów
-A tutaj macierz korelacji. Ladna.
+## Korelacje atrybutów
+Przeanalizujmy teraz czy parametry wejsciowe sa ze soba skorelowane.
 
 ```{r correlation, echo=FALSE}
 corrs <- cor(data.matrix(data_clean))
@@ -76,6 +76,17 @@ corrplot(corrs[-1,-1],  method = "color",
     cl.cex = 1/par("cex"))
 par(cex = cex.before)
 ```
+
+Jak widac, niektore parametry sa ze soba silnie skorelowane:
+
+* 'lcop1' oraz 'chel1'
+* 'lcop2' oraz 'chel2'
+* 'lcop2' oraz 'cfin2'
+* 'fbar' oraz 'cumf'
+* 'totaln' oraz 'cumf'
+
+Parametry 'lcop', 'chel' oraz 'cfin' odpowiadaja poszczegolnym gatunkom planktonu. Prawdopodobnie maja one podobne wymagania co do temperatury i innych czynnikow srodowiskowych, przez co rozwijaja sie podobnie. Nie dziwi rowniez silna korelacja pomiedzy parametrami 'fbar', 'cumf' - oba opisuja natezenie polowow w regionie. Tak samo mozna wytlumaczyc silna korelacje pomiedzy 'totaln' i 'cumf' - odsetek zostawionych ryb i zlowionych ryb. Poniewaz takie parametry moga zaburzac analize danych, usuniemy czesc z nich: 'lcop1', 'lcop2', 'fbar', 'totaln'.
+
 
 ###  Animowane sledzie
 Interaktywny wykres przedstawiający zmianę rozmiaru śledzi w czasie.
@@ -99,23 +110,37 @@ shinyApp(
 )
 ```
 
-### Regres osobisty
+## Regresja
 
-``` {r regrets}
+Sprobujemy teraz odpowiedziec na pytanie co jest przyczyna zmian dlugosci sledzia. Do tego celu wytrenujemy model regresyjny.  Dane wejsciowe zostaly podzielone na zbior treningowy (90% danych) i testowy (10% danych). 
+
+``` {r dane}
 train_indices <- createDataPartition(data_clean$length, p=0.9, list = FALSE, times=1)
 test_indices <- -train_indices
 
 train_set <- data.matrix(data_clean[train_indices, -1])
 test_set <- data.matrix(data_clean[test_indices, -1])
-
-model <- train(length ~ ., data = train_set, method="lm", preProcess = c('scale', 'center'))
 ```
+
+Na poczatek sprawdzimy dzialanie najprostszego modelu, regresji liniowej. W celu polepszenia wynikow, dane wejsciowe zostaly przeskalowane oraz wycentrowane.
+
+``` {r model}
+model <- train(length ~ cfin1+cfin2+chel1+chel2+recr+cumf+sst+sal+xmonth+nao, data = train_set, method="lm", preProcess = c('scale', 'center'))
+```
+
+Nastepnie sprawdzmy jak nasz model radzi sobie na zbiorze testowym:
 
 ```{r model_summary}
 predicted <- predict(model, test_set)
 postResample(predicted, data_clean[test_indices, 2])
 ```
 
+Na koniec zobaczmy jakie zmienne sa najwazniejsze dla naszego modelu:
+
 ```{r var_importance}
 varImp(model)
 ```
+
+Jak widzimy, najwazniejsza jest temperatura wody przy powierzchni.
+
+
